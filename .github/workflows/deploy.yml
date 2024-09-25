@@ -1,0 +1,60 @@
+# 워크플로 이름
+name: M-Bridge CI
+
+# 워크플로를 자동으로 실행하도록 할 트리거 브랜치 지정
+on:
+  push: # main브랜치에 코드가 push 될 때 워크플로 실행
+    branches:
+      - main
+  pull_request: # main브랜치에 코드가 pull request 될 때 워크플로 실행
+    branches:
+      - main
+
+# 실행할 작업들을 정리
+jobs:
+  build:
+    runs-on: ubuntu-latest # 작업이 실행될 환경 지정
+
+    steps: # 순차적으로 수행할 작업 단계 명시
+        # 프로젝트 코드를 checkout
+      - name: Checkout
+        uses: actions/checkout@v4
+
+        # Github Action이 실행될 OS에 JAVA 설치
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+
+        # gradle wrapper를 실행할 수 있도록 실행 권한 부여
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+        shell: bash
+
+        # gradle wrapper를 통해 해당 프로젝트를 build
+      - name: Build with Gradle
+        run: ./gradlew clean bootjar
+        shell: bash
+
+        # AWS Elastic Beanstalk 배포에 필요한 파일들을 모아서 압축 파일 생성
+      - name: Generate deployment package
+        run: |
+          mkdir -p deploy
+          cp build/libs/*.jar deploy/application.jar
+          cp Procfile deploy/Procfile
+          cp -r .ebextensions deploy/.ebextensions
+          cp -r .platform deploy/.platform
+          cd deploy && zip -r deploy.zip .
+
+        # AWS Elastic Beanstalk에 배포하는 단계
+      - name: Beanstalk Deploy
+        uses: einaregilsson/beanstalk-deploy@v20
+        with:
+          aws_access_key: ${{secrets.AWS_ACCESS_KEY}}
+          aws_secret_key: ${{secrets.AWS_SECRET_KEY}}
+          application_name: rest-Elastic-Beanstalk
+          environment_name: Rest-elastic-beanstalk-env
+          version_label: github-action-${{github.run_id}}
+          region: ap-northeast-2
+          deployment_package: deploy/deploy.zip
+          wait_for_environment_recovery: 60
