@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class testHelloWorld {
 
-    @GetMapping("/hello")
+    // health check api
+    @GetMapping("/")
     public String hello(){
         return "Hello World!";
     }
