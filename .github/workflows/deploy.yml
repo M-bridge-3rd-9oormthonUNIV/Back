@@ -27,6 +27,18 @@ jobs:
           java-version: 21
           distribution: adopt-hotspot
 
+        # Gradle 패키지를 캐시함으로써 워크플로우 실행 시간 단축
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+
         # gradle wrapper를 실행할 수 있도록 실행 권한 부여
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -49,7 +61,7 @@ jobs:
 
         # AWS Elastic Beanstalk에 배포하는 단계
       - name: Beanstalk Deploy
-        uses: einaregilsson/beanstalk-deploy@v20
+        uses: einaregilsson/beanstalk-deploy@v22
         with:
           aws_access_key: ${{secrets.AWS_ACCESS_KEY}}
           aws_secret_key: ${{secrets.AWS_SECRET_KEY}}
@@ -59,3 +71,11 @@ jobs:
           region: ap-northeast-2
           deployment_package: deploy/deploy.zip
           wait_for_environment_recovery: 60
+
+        #Gradle 캐시를 정리
+      - name: Cleanup Gradle Cache
+        if: ${{ always() }}    #이전 단계의 성공 여부와 관계없이 항상 실행
+
+        run: |
+          rm -f ~/.gradle/caches/modules-2/modules-2.lock
+          rm -f ~/.gradle/caches/modules-2/gc.properties
