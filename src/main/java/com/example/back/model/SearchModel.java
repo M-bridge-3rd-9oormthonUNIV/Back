@@ -1,5 +1,6 @@
 package com.example.back.model;
 
+import com.example.back.LyricsScraper;
 import io.github.cdimascio.dotenv.Dotenv;
 import com.example.back.DTO.SongDTO;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,10 +16,10 @@ public class SearchModel {
 
     private final String API_URL = "https://api.genius.com";
     private final String ACCESS_TOKEN; // Genius API 토큰
-
     private final WebClient webClient;
+    private final LyricsScraper lyricsScraper;
 
-    public SearchModel() {
+    public SearchModel(LyricsScraper lyricsScraper) {
         Dotenv dotenv = Dotenv.load();
         this.ACCESS_TOKEN = dotenv.get("GENIUS_API_TOKEN");
 
@@ -26,9 +27,12 @@ public class SearchModel {
             .baseUrl(API_URL)
             .defaultHeader("Authorization", "Bearer " + ACCESS_TOKEN)
             .build();
+
+        this.lyricsScraper = lyricsScraper;
     }
 
-    public Mono<List<SongDTO>> searchTrack(String artist, String track) {
+    //검색 결과 반환
+    public Mono<List<SongDTO>> search(String artist, String track) {
         String searchQuery = track + " " + artist;
 
         return webClient.get()
@@ -40,7 +44,7 @@ public class SearchModel {
             .flatMap(this::parseSearchResponse);
     }
 
-    // 2. 검색 결과에서 곡 정보를 파싱하는 메소드
+    // 2. 검색 결과에서 정보 파싱
     private Mono<List<SongDTO>> parseSearchResponse(String response) {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -60,12 +64,38 @@ public class SearchModel {
 
                 return Mono.just(songList);
             } else {
-                return Mono.just(new ArrayList<>());  // 결과가 없을 때
+                return Mono.just(new ArrayList<>());
             }
         } catch (Exception e) {
             e.printStackTrace();
             return Mono.error(new RuntimeException("Error parsing Genius API response"));
         }
+    }
+
+    //가사 가져오기
+    public Mono<String> getLyricsUrl(String songId) {
+        return webClient.get()
+            .uri("/songs/{id}", songId)
+            .retrieve()
+            .bodyToMono(String.class)
+            .flatMap(response -> {
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    JsonNode root = mapper.readTree(response);
+                    String lyricsUrl = root.path("response").path("song").path("url").asText();
+                    System.out.println("lyricsUrl: " + lyricsUrl);
+                    return Mono.just(lyricsUrl);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return Mono.error(new RuntimeException("Error parsing Genius API response"));
+                }
+            });
+    }
+
+    // 2. songId로 가사 URL을 가져오고, 가사 스크래핑 메소드를 호출
+    public Mono<String> getOriginLyrics(String songId) {
+        return getLyricsUrl(songId)
+            .flatMap(lyricsUrl -> Mono.just(lyricsScraper.scrapeLyrics(lyricsUrl)));
     }
 
 }

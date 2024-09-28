@@ -5,6 +5,7 @@ import com.example.back.model.SearchModel;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
@@ -19,8 +20,13 @@ public class SearchController {
         this.searchModel = searchModel;
     }
 
-    @GetMapping("/search")
-    public Mono<List<SongDTO>> getTrackDetails(@RequestParam String artist, @RequestParam String track) {
-        return searchModel.searchTrack(artist, track);
+    @GetMapping("/api/search")
+    public Mono<List<SongDTO>> getSearch(@RequestParam String artist, @RequestParam String track) {
+        return searchModel.search(artist, track);
+    }
+
+    @GetMapping("/api/lyrics/original/{id}")
+    public Mono<String> getOriginLyrics(@PathVariable("id") String songId) {
+        return searchModel.getOriginLyrics(songId);
     }
 }
