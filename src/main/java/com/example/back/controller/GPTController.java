@@ -23,6 +23,6 @@ public class GPTController {
     @PostMapping("")
     public ResponseEntity<?> getResponseMsg(@RequestBody Map<String, String> requestBody) throws JsonProcessingException{
         String response = requestBody.get("message");
-        return gptService.getResponseMsg(response);
+        return gptService.callChatGpt(response);
     }
 }

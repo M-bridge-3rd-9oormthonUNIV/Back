@@ -14,8 +14,9 @@ public class LyricsService {
     private final String ACCESS_TOKEN; // Genius API 토큰
     private final WebClient webClient;
     private final LyricsScraper lyricsScraper;
+    private final LyricsCacheService lyricsCacheService;
 
-    public LyricsService(LyricsScraper lyricsScraper) {
+    public LyricsService(LyricsScraper lyricsScraper, LyricsCacheService lyricsCacheService) {
         Dotenv dotenv = Dotenv.load();
         this.ACCESS_TOKEN = dotenv.get("GENIUS_API_TOKEN");
 
@@ -25,12 +26,18 @@ public class LyricsService {
             .build();
 
         this.lyricsScraper = lyricsScraper;
+        this.lyricsCacheService = lyricsCacheService;
     }
 
     //songId로 가사 URL을 가져오고, 가사 스크래핑 메소드를 호출
+    //캐시에서 먼저 원본 가사를 찾은 후, 없으면 API 호출 후 캐시 저장
     public Mono<String> getOriginLyrics(String songId) {
-        return getLyricsUrl(songId)
-            .flatMap(lyricsUrl -> Mono.just(lyricsScraper.scrapeLyrics(lyricsUrl)));
+        return lyricsCacheService.getCachedLyrics(songId)
+            .switchIfEmpty(
+                getLyricsUrl(songId)
+                    .flatMap(lyricsUrl -> Mono.just(lyricsScraper.scrapeLyrics(lyricsUrl)))
+                    .doOnNext(lyrics -> lyricsCacheService.cacheOriginalLyrics(songId, lyrics))
+            );
     }
 
     //가사 가져오기
