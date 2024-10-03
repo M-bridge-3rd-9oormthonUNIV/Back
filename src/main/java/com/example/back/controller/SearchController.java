@@ -1,7 +1,7 @@
 package com.example.back.controller;
 
 import com.example.back.DTO.SongDTO;
-import com.example.back.model.SearchModel;
+import com.example.back.service.SearchService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,16 +14,16 @@ import reactor.core.publisher.Mono;
 @RestController
 public class SearchController {
 
-    private final SearchModel searchModel;
+    private final SearchService searchService;
 
     @Autowired
-    public SearchController(SearchModel searchModel) {
-        this.searchModel = searchModel;
+    public SearchController(SearchService searchService) {
+        this.searchService = searchService;
     }
 
     @GetMapping("/api/search")
     public Mono<ResponseEntity<List<SongDTO>>> getSearch(@RequestParam String artist, @RequestParam String track) {
-        return searchModel.search(artist, track)
+        return searchService.search(artist, track)
             .flatMap(results -> {
                 return Mono.just(ResponseEntity.ok(results)); // 결과가 있으면 200 OK와 함께 리스트 반환
             })
@@ -32,6 +32,6 @@ public class SearchController {
 
     @GetMapping("/api/lyrics/original/{id}")
     public Mono<String> getOriginLyrics(@PathVariable("id") String songId) {
-        return searchModel.getOriginLyrics(songId);
+        return searchService.getOriginLyrics(songId);
     }
 }

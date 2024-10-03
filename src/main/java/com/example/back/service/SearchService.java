@@ -1,27 +1,25 @@
-package com.example.back.model;
+package com.example.back.service;
 
 import com.example.back.LyricsScraper;
 import io.github.cdimascio.dotenv.Dotenv;
 import com.example.back.DTO.SongDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class SearchModel {
+public class SearchService {
 
     private final String API_URL = "https://api.genius.com";
     private final String ACCESS_TOKEN; // Genius API 토큰
     private final WebClient webClient;
     private final LyricsScraper lyricsScraper;
 
-    public SearchModel(LyricsScraper lyricsScraper) {
+    public SearchService(LyricsScraper lyricsScraper) {
         Dotenv dotenv = Dotenv.load();
         this.ACCESS_TOKEN = dotenv.get("GENIUS_API_TOKEN");
 
