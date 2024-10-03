@@ -27,6 +27,7 @@ public class GPTService {
         Dotenv dotenv = Dotenv.load();
         this.ACCESS_TOKEN = dotenv.get("OPEN_API_TOKEN");
     }
+
     public JsonNode callChatGpt(String userMsg) throws JsonProcessingException {
         final String url = "https://api.openai.com/v1/chat/completions";
 
@@ -42,12 +43,10 @@ public class GPTService {
 
         Map<String, String> message = new HashMap<>();
         message.put("role", "user");
-        message.put("content", userMsg); //userMsg로 변경해야 함
-        System.out.println("userMsg: " + userMsg);
+        message.put("content", userMsg);
         bodyMap.put("messages", List.of(message));
 
         String body = objectMapper.writeValueAsString(bodyMap);
-        System.out.println("body: " + body);
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
         RestTemplate restTemplate = new RestTemplate();
@@ -56,7 +55,7 @@ public class GPTService {
         return objectMapper.readTree(response.getBody());
     }
 
-    public ResponseEntity<?> getAssistantMsg(String userMsg) throws JsonProcessingException {
+    public ResponseEntity<?> getResponseMsg(String userMsg) throws JsonProcessingException {
         JsonNode jsonNode = callChatGpt(userMsg);
         String content = jsonNode.path("choices").get(0).path("message").path("content").asText();
 
