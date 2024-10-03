@@ -29,9 +29,4 @@ public class SearchController {
             })
             .switchIfEmpty(Mono.just(ResponseEntity.noContent().build()));   // 결과가 없으면 204 No Content 반환
     }
-
-    @GetMapping("/api/lyrics/original/{id}")
-    public Mono<String> getOriginLyrics(@PathVariable("id") String songId) {
-        return searchService.getOriginLyrics(songId);
-    }
 }

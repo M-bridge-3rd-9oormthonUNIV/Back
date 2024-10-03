@@ -17,7 +17,6 @@ public class SearchService {
     private final String API_URL = "https://api.genius.com";
     private final String ACCESS_TOKEN; // Genius API 토큰
     private final WebClient webClient;
-    private final LyricsScraper lyricsScraper;
 
     public SearchService(LyricsScraper lyricsScraper) {
         Dotenv dotenv = Dotenv.load();
@@ -27,8 +26,6 @@ public class SearchService {
             .baseUrl(API_URL)
             .defaultHeader("Authorization", "Bearer " + ACCESS_TOKEN)
             .build();
-
-        this.lyricsScraper = lyricsScraper;
     }
 
     //검색 결과 반환
@@ -70,31 +67,6 @@ public class SearchService {
             e.printStackTrace();
             return Mono.error(new RuntimeException("Error parsing Genius API response"));
         }
-    }
-
-    //songId로 가사 URL을 가져오고, 가사 스크래핑 메소드를 호출
-    public Mono<String> getOriginLyrics(String songId) {
-        return getLyricsUrl(songId)
-            .flatMap(lyricsUrl -> Mono.just(lyricsScraper.scrapeLyrics(lyricsUrl)));
-    }
-
-    //가사 가져오기
-    public Mono<String> getLyricsUrl(String songId) {
-        return webClient.get()
-            .uri("/songs/{id}", songId)
-            .retrieve()
-            .bodyToMono(String.class)
-            .flatMap(response -> {
-                try {
-                    ObjectMapper mapper = new ObjectMapper();
-                    JsonNode root = mapper.readTree(response);
-                    String lyricsUrl = root.path("response").path("song").path("url").asText();
-                    return Mono.just(lyricsUrl);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return Mono.error(new RuntimeException("Error parsing Genius API response"));
-                }
-            });
     }
 
 }
