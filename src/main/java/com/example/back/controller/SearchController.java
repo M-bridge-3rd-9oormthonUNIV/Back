@@ -4,6 +4,7 @@ import com.example.back.DTO.SongDTO;
 import com.example.back.model.SearchModel;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,8 +22,12 @@ public class SearchController {
     }
 
     @GetMapping("/api/search")
-    public Mono<List<SongDTO>> getSearch(@RequestParam String artist, @RequestParam String track) {
-        return searchModel.search(artist, track);
+    public Mono<ResponseEntity<List<SongDTO>>> getSearch(@RequestParam String artist, @RequestParam String track) {
+        return searchModel.search(artist, track)
+            .flatMap(results -> {
+                return Mono.just(ResponseEntity.ok(results)); // 결과가 있으면 200 OK와 함께 리스트 반환
+            })
+            .switchIfEmpty(Mono.just(ResponseEntity.noContent().build()));   // 결과가 없으면 204 No Content 반환
     }
 
     @GetMapping("/api/lyrics/original/{id}")
