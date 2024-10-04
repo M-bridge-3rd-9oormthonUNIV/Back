@@ -3,9 +3,10 @@ name: M-Bridge CI
 
 # 워크플로를 자동으로 실행하도록 할 트리거 브랜치 지정
 on:
-  push: # main브랜치에 코드가 push 될 때 워크플로 실행
-    branches:
-      - main
+#  workflow가 중복 실행되는 이슈 발생 -> push 조건 주석처리
+#  push: # main브랜치에 코드가 push 될 때 워크플로 실행
+#    branches:
+#      - main
   pull_request: # main브랜치에 코드가 pull request 될 때 워크플로 실행
     branches:
       - main
