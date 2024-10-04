@@ -5,6 +5,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import com.example.back.DTO.SongDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -18,9 +19,9 @@ public class SearchService {
     private final String ACCESS_TOKEN; // Genius API 토큰
     private final WebClient webClient;
 
-    public SearchService(LyricsScraper lyricsScraper) {
-        Dotenv dotenv = Dotenv.load();
-        this.ACCESS_TOKEN = dotenv.get("GENIUS_API_TOKEN");
+    public SearchService(LyricsScraper lyricsScraper, @Value("${GENIUS_API_TOKEN}")String accessToken) {
+        ACCESS_TOKEN = accessToken;
+
 
         this.webClient = WebClient.builder()
             .baseUrl(API_URL)
