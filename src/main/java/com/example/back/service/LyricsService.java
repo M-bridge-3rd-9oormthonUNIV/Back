@@ -4,6 +4,7 @@ import com.example.back.LyricsScraper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -11,14 +12,13 @@ import reactor.core.publisher.Mono;
 @Service
 public class LyricsService {
     private final String API_URL = "https://api.genius.com";
-    private final String ACCESS_TOKEN; // Genius API 토큰
     private final WebClient webClient;
     private final LyricsScraper lyricsScraper;
     private final LyricsCacheService lyricsCacheService;
+    private final String ACCESS_TOKEN; // Genius API 토큰
 
-    public LyricsService(LyricsScraper lyricsScraper, LyricsCacheService lyricsCacheService) {
-        Dotenv dotenv = Dotenv.load();
-        this.ACCESS_TOKEN = dotenv.get("GENIUS_API_TOKEN");
+    public LyricsService(LyricsScraper lyricsScraper, LyricsCacheService lyricsCacheService, @Value("${GENIUS_API_TOKEN}")String accessToken) {
+        ACCESS_TOKEN = accessToken;
 
         this.webClient = WebClient.builder()
             .baseUrl(API_URL)

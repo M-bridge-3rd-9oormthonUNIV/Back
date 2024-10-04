@@ -26,9 +26,9 @@ public class GPTService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-    public GPTService() {
-        Dotenv dotenv = Dotenv.load();
-        this.ACCESS_TOKEN = dotenv.get("OPEN_API_TOKEN");
+    public GPTService(@Value("${OPEN_API_TOKEN}")String accessToken) {
+        ACCESS_TOKEN = accessToken;
+
         this.restTemplate = new RestTemplate();
         this.objectMapper = new ObjectMapper();
     }
