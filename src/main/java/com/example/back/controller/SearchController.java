@@ -22,8 +22,8 @@ public class SearchController {
     }
 
     @GetMapping("/api/search")
-    public Mono<ResponseEntity<List<SongDTO>>> getSearch(@RequestParam String artist, @RequestParam String track) {
-        return searchService.search(artist, track)
+    public Mono<ResponseEntity<List<SongDTO>>> getSearch(@RequestParam String artist, @RequestParam String song) {
+        return searchService.search(artist, song)
             .flatMap(results -> {
                 return Mono.just(ResponseEntity.ok(results)); // 결과가 있으면 200 OK와 함께 리스트 반환
             })
