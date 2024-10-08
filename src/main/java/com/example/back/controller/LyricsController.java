@@ -4,8 +4,6 @@ import com.example.back.service.GPTService;
 import com.example.back.service.LyricsService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.HashMap;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +16,6 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/api/lyrics")
 public class LyricsController {
-
     private final LyricsService lyricsService;
     private final GPTService gptService;
 

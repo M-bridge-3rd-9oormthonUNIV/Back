@@ -3,8 +3,6 @@ package com.example.back.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.cdimascio.dotenv.Dotenv;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import reactor.core.publisher.Mono;
 
 @Service
 public class GPTService {
@@ -41,9 +38,9 @@ public class GPTService {
         return headers;
     }
 
-    private String createRequestBody(String model, List<Map<String, String>> messages) throws JsonProcessingException {
+    private String createRequestBody(List<Map<String, String>> messages) throws JsonProcessingException {
         Map<String, Object> bodyMap = new HashMap<>();
-        bodyMap.put("model", model);
+        bodyMap.put("model", "gpt-3.5-turbo");
         bodyMap.put("messages", messages);
         return objectMapper.writeValueAsString(bodyMap);
     }
@@ -61,7 +58,7 @@ public class GPTService {
         Map<String, String> message = new HashMap<>();
         message.put("role", "user");
         message.put("content", userMsg);
-        String requestBody = createRequestBody("gpt-3.5-turbo", List.of(message));
+        String requestBody = createRequestBody(List.of(message));
 
         // API 호출 및 응답 처리
         JsonNode jsonNode = sendRequestToGPT(requestBody);
@@ -71,12 +68,12 @@ public class GPTService {
 
     public JsonNode getTranslation(String originalLyrics, String lang) throws JsonProcessingException {
         // 번역을 위한 프롬프트 메시지 생성
-        String prompt =  "Format it in HTML, using appropriate HTML tags: " + originalLyrics + "and translate the following lyrics to " + lang + ". Return only the HTML body content.";
+        String prompt = "Translate the following lyrics to lang: " + lang + ". while keeping the HTML tags intact. Return the translation in the same HTML format." + originalLyrics;
 
         Map<String, String> message = new HashMap<>();
         message.put("role", "user");
         message.put("content", prompt);
-        String requestBody = createRequestBody("gpt-3.5-turbo", List.of(message));
+        String requestBody = createRequestBody(List.of(message));
 
         // API 호출 및 응답 처리
         return sendRequestToGPT(requestBody);
