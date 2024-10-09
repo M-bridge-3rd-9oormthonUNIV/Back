@@ -69,36 +69,10 @@ public class GPTService {
         return ResponseEntity.status(HttpStatus.OK).body(content);
     }
 
-//    public JsonNode callChatGpt(String userMsg) throws JsonProcessingException {
-//        final String url = "https://api.openai.com/v1/chat/completions";
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-//        headers.setContentType(MediaType.APPLICATION_JSON);
-//        headers.setBearerAuth(ACCESS_TOKEN);
-//
-//        ObjectMapper objectMapper = new ObjectMapper();
-//
-//        Map<String, Object> bodyMap = new HashMap<>();
-//        bodyMap.put("model", "gpt-3.5-turbo");
-//
-//        Map<String, String> message = new HashMap<>();
-//        message.put("role", "user");
-//        message.put("content", userMsg);
-//        bodyMap.put("messages", List.of(message));
-//
-//        String body = objectMapper.writeValueAsString(bodyMap);
-//        HttpEntity<String> request = new HttpEntity<>(body, headers);
-//
-//        RestTemplate restTemplate = new RestTemplate();
-//        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
-//
-//        return objectMapper.readTree(response.getBody());
-//    }
-
     public JsonNode getTranslation(String originalLyrics, String lang) throws JsonProcessingException {
         // 번역을 위한 프롬프트 메시지 생성
-        String prompt = "Translate the following lyrics to " + lang + ": " + originalLyrics;
+        String prompt =  "Format it in HTML, using appropriate HTML tags: " + originalLyrics + "and translate the following lyrics to " + lang + ". Return only the HTML body content.";
+
         Map<String, String> message = new HashMap<>();
         message.put("role", "user");
         message.put("content", prompt);
@@ -107,41 +81,4 @@ public class GPTService {
         // API 호출 및 응답 처리
         return sendRequestToGPT(requestBody);
     }
-
-//    public ResponseEntity<?> getResponseMsg(String userMsg) throws JsonProcessingException {
-//        JsonNode jsonNode = callChatGpt(userMsg);
-//        String content = jsonNode.path("choices").get(0).path("message").path("content").asText();
-//
-//        return ResponseEntity.status(HttpStatus.OK).body(content);
-//    }
-
-
-//    public JsonNode getTranslation(String originalLyrics, String lang) throws JsonProcessingException {
-//        final String url = "https://api.openai.com/v1/chat/completions";
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-//        headers.setContentType(MediaType.APPLICATION_JSON);
-//        headers.setBearerAuth(ACCESS_TOKEN);
-//
-//        String prompt = "Translate the following lyrics to " + lang + ": " + originalLyrics;
-//
-//        ObjectMapper objectMapper = new ObjectMapper();
-//
-//        Map<String, Object> bodyMap = new HashMap<>();
-//        bodyMap.put("model", "gpt-3.5-turbo");
-//
-//        Map<String, String> message = new HashMap<>();
-//        message.put("role", "user");
-//        message.put("content", prompt);
-//        bodyMap.put("messages", List.of(message));
-//
-//        String body = objectMapper.writeValueAsString(bodyMap);
-//        HttpEntity<String> request = new HttpEntity<>(body, headers);
-//
-//        RestTemplate restTemplate = new RestTemplate();
-//        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
-//
-//        return objectMapper.readTree(response.getBody());
-//    }
 }
