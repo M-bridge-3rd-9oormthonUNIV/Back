@@ -23,10 +23,10 @@ jobs:
 
         # Github Action이 실행될 OS에 JAVA 설치
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v4.4.0
         with:
           java-version: 21
-          distribution: adopt-hotspot
+          distribution: adopt
 
         # Gradle 패키지를 캐시함으로써 워크플로우 실행 시간 단축
       - name: Cache Gradle packages
