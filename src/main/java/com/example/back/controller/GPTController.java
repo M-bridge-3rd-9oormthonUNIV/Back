@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/chat")
 public class GPTController {
 
     private final GPTService gptService;
@@ -25,7 +24,7 @@ public class GPTController {
         this.cacheService = cacheService;
     }
 
-    @PostMapping("")
+    @PostMapping("/api/chat")
     public ResponseEntity<?> getResponseMsg(@RequestBody Map<String, String> requestBody) throws JsonProcessingException{
         String cacheId = requestBody.get("id");
         String userMsg = requestBody.get("message");
