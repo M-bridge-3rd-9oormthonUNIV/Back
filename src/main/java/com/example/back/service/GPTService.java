@@ -84,12 +84,16 @@ public class GPTService {
 
     public JsonNode getTranslation(String originalLyrics, String lang) throws JsonProcessingException {
         // 번역을 위한 프롬프트 메시지 생성
-        String prompt = "Translate the following lyrics to lang: " + lang + ". while keeping the HTML tags intact. Return the translation in the same HTML format." + originalLyrics;
+        Map<String, String> assistantMessage = new HashMap<>();
+        assistantMessage.put("role", "assistant");
+        assistantMessage.put("content", "Translate the provided lyrics into " + lang + " while preserving the meaning and context of the original lyrics. Ensure that all HTML tags, such as <br>, remain intact. Return the translated lyrics in the exact same HTML structure as provided.");
+
+        String prompt = "originalLyrics: \n" + originalLyrics;
 
         Map<String, String> message = new HashMap<>();
         message.put("role", "user");
         message.put("content", prompt);
-        String requestBody = createRequestBody(List.of(message));
+        String requestBody = createRequestBody(List.of(assistantMessage, message));
 
         // API 호출 및 응답 처리
         return sendRequestToGPT(requestBody);
