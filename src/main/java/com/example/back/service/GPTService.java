@@ -3,6 +3,7 @@ package com.example.back.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,12 +22,13 @@ public class GPTService {
     private final String ACCESS_TOKEN;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final CacheService cacheService;
 
-    public GPTService(@Value("${OPEN_API_TOKEN}")String accessToken) {
+    public GPTService(@Value("${OPEN_API_TOKEN}")String accessToken, CacheService cacheService) {
         ACCESS_TOKEN = accessToken;
-
         this.restTemplate = new RestTemplate();
         this.objectMapper = new ObjectMapper();
+        this.cacheService = cacheService;
     }
 
     private HttpHeaders createHeaders() {
@@ -53,17 +54,32 @@ public class GPTService {
         return objectMapper.readTree(response.getBody());
     }
 
-    public ResponseEntity<?> callChatGpt(String userMsg) throws JsonProcessingException {
-        // 메시지 생성
-        Map<String, String> message = new HashMap<>();
-        message.put("role", "user");
-        message.put("content", userMsg);
-        String requestBody = createRequestBody(List.of(message));
+    public String getChatResponse(String cacheId, String userMessage) throws JsonProcessingException {
+        List<Map<String, String>> chatList = cacheService.getConversation(cacheId);
+        // 캐시 ID가 없으면 새로운 대화 시작
+        if (cacheId == null || cacheId.isEmpty()) {
+            chatList = new ArrayList<>();
+        }
+        Map<String, String> userMsgMap = new HashMap<>();
+        userMsgMap.put("role", "user");
+        userMsgMap.put("content", userMessage);
+        chatList.add(userMsgMap);
 
-        // API 호출 및 응답 처리
+        // ChatGPT에게 대화 내용을 전달
+        String requestBody = createRequestBody(chatList);
         JsonNode jsonNode = sendRequestToGPT(requestBody);
-        String content = jsonNode.path("choices").get(0).path("message").path("content").asText();
-        return ResponseEntity.status(HttpStatus.OK).body(content);
+
+        // 대화 응답을 기록
+        String gptResponse = jsonNode.path("choices").get(0).path("message").path("content").asText();
+        Map<String, String> responseMap = new HashMap<>();
+        responseMap.put("role", "assistant");
+        responseMap.put("content", gptResponse);
+        chatList.add(responseMap);
+
+        // 대화 기록을 캐시에 저장
+        cacheService.saveConversation(cacheId, chatList);
+
+        return gptResponse;
     }
 
     public JsonNode getTranslation(String originalLyrics, String lang) throws JsonProcessingException {
